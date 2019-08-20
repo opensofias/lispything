@@ -46,12 +46,19 @@ const list = (tree, scope) => tree.map (item => {
 		case '()': return evaluate (item, scope)
 		case '[]': return list (item, scope)
 		case '{}': return item
-		default: throw 'unknown list type ' + item.type
-	} else return (item in scope) ? scope [item] : parseLiteral (item)
+		default:
+			console.error ('unknown list type ' + item.type)
+			return list (item, scope)
+	} else if (['number', 'function'].includes (typeof item)) return item
+	else return parseLiteral (item)
 })
 
-const evaluate = (tree, scope) => { console.log (tree, scope)
-	return (([first, ...rest]) => first (rest, scope)) (list (tree, scope))
+const evaluate = (tree, scope) => {
+	console.log (tree, scope)
+	return (([first, ...rest]) =>
+		first (rest, scope)) (list (tree, scope).map (item =>
+			(item in scope) ? scope [item] : item
+		))
 }
 
 const parseLiteral = str => {
@@ -82,9 +89,10 @@ const builtins = {
 	let: ([[name, value], body], scope) => evaluate (body, {__proto__: scope, [name]: value}),
 	set: ([name, value]) => permaScope [name] = value,
 	del: (param) => param.forEach (name => {delete permaScope [name]}),
-	lambda: ([names, ...body], scope) => (...values) => evaluate (body, {
-		...names.reduce ((subScope, name, idx) => subScope [name] = values [idx]),
-		__proto__: scope,
+	lambda: ([names, ...body], scope) => (values) => evaluate (body, {
+		...(names.reduce ((subScope, name, idx) =>
+			subScope [name] = values [idx], {}
+		)),	__proto__: scope,
 	}),
 	list, eval: evaluate	
 }
