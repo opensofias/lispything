@@ -45,14 +45,14 @@ const list = (tree, scope) => tree.map (subTree => {
 	if (subTree.type == '()') return evaluate (subTree, scope)
 	else if (subTree.type == '[]') return list (subTree, scope)
 	else if (subTree.type == '{}') return subTree
-	else throw 'unknown type of subtree: ' + subTree.type
+	else return subTree
 })
 
 const evaluate = (tree, scope) => {
 	
 	
 	switch (tree [0]) {
-		case 'eval': return eval (tree [1], scope);
+		case 'eval': return evaluate (tree [1], scope);
 		case 'list': return list (tree.slice (1), scope);
 	}
 	
