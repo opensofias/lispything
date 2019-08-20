@@ -42,13 +42,13 @@ const tokens2tree = tokenList => {
 }
 
 const list = (tree, scope) => tree.map (subTree => {
-	if (subTree.type == '()') return eval (subTree, scope)
+	if (subTree.type == '()') return evaluate (subTree, scope)
 	else if (subTree.type == '[]') return list (subTree, scope)
 	else if (subTree.type == '{}') return subTree
-	else throw 'unknown type of subtree: ' + subTree
+	else throw 'unknown type of subtree: ' + subTree.type
 })
 
-const eval = (tree, scope) => {
+const evaluate = (tree, scope) => {
 	
 	
 	switch (tree [0]) {

@@ -4,13 +4,19 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>goldenfork</title>
-	<script src="GoldenScheme.js"></script>
-	<script src="myStupidLisp.js"></script>
+	<script src="lispyThing.js"></script>
+	<script>
+		const run = () => {
+			document.getElementsByTagName ('output')[0].value =
+				list (tokens2tree ( str2tokens(
+					document.getElementsByTagName ('textarea')[0].value
+				)))
+		}
+	</script>
 </head>
 <body>
-	<textarea></textarea> <button onclick="new GoldenScheme().run(
-		document.getElementsByTagName ('textarea')[0].value
-		)" >exec</button>
-	<output id="debug" />
+	<textarea></textarea>
+	<output></output>
+	<button onclick="run()" >exec</button>
 </body>
 </html>
