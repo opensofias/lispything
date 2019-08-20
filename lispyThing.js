@@ -41,21 +41,47 @@ const tokens2tree = tokenList => {
 	return stack[0]
 }
 
-const list = (tree, scope) => tree.map (subTree => {
-	if (subTree.type == '()') return evaluate (subTree, scope)
-	else if (subTree.type == '[]') return list (subTree, scope)
-	else if (subTree.type == '{}') return subTree
-	else return subTree
+const list = (tree, scope) => tree.map (item => {
+	if (! (item instanceof Array)) return item
+	else switch (item.type) {
+		case '()': return evaluate (item, scope)
+		case '[]': return list (item, scope)
+		case '{}': return item
+		default: throw 'unknown list type ' + item.type
+	} 
 })
 
 const evaluate = (tree, scope) => {
-	
-	
 	switch (tree [0]) {
 		case 'eval': return evaluate (tree [1], scope);
 		case 'list': return list (tree.slice (1), scope);
 	}
 	
-
+	tree = tree.map (item =>
+		(item in scope) ? scope [item] : parseLiteral (item)
+	)
+	
 }
 
+const parseLiteral = str => {
+	for (const prefix in literalMap) {
+		if (str.startsWith (prefix)) return literalMap [prefix] (str)
+	}
+
+	return str
+}
+
+const literalMap = {
+	'#': lit => Number.parseInt(lit.slice (1), 16),
+	'd#': lit => Number.parseInt(lit.slice (2), 10),
+	'b#': lit => Number.parseInt(lit.slice (2), 2),
+	"'": lit => lit.slice (1)
+}
+
+const functions = {
+	'+': (...nums) => nums.reduce ((acc, cur) => acc + cur, 0),
+	'*': (...nums) => nums.reduce ((acc, cur) => acc * cur, 1),
+	'-': (...nums) => 0 - nums.reduce ((acc, cur) => acc + cur, 0),
+	'/': (...nums) => 1 / nums.reduce ((acc, cur) => acc * cur, 1),
+	
+}
