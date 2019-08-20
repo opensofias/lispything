@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>goldenfork</title>
+	<script src="GoldenScheme.js"></script>
+	<script src="myStupidLisp.js"></script>
+</head>
+<body>
+	<textarea></textarea> <button onclick="new GoldenScheme().run(
+		document.getElementsByTagName ('textarea')[0].value
+		)" >exec</button>
+	<output id="debug" />
+</body>
+</html>
