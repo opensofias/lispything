@@ -42,32 +42,22 @@ const tokens2tree = tokenList => {
 }
 
 const list = (tree, scope) => tree.map (item => {
-	if (! (item instanceof Array)) return item
-	else switch (item.type) {
+	if (item instanceof Array) switch (item.type) {
 		case '()': return evaluate (item, scope)
 		case '[]': return list (item, scope)
 		case '{}': return item
 		default: throw 'unknown list type ' + item.type
-	} 
+	} else return (item in scope) ? scope [item] : parseLiteral (item)
 })
 
-const evaluate = (tree, scope) => {
-	switch (tree [0]) {
-		case 'eval': return evaluate (tree [1], scope);
-		case 'list': return list (tree.slice (1), scope);
-	}
-	
-	tree = tree.map (item =>
-		(item in scope) ? scope [item] : parseLiteral (item)
-	)
-	
+const evaluate = (tree, scope) => { console.log (tree, scope)
+	return (([first, ...rest]) => first (rest, scope)) (list (tree, scope))
 }
 
 const parseLiteral = str => {
 	for (const prefix in literalMap) {
 		if (str.startsWith (prefix)) return literalMap [prefix] (str)
 	}
-
 	return str
 }
 
@@ -78,10 +68,25 @@ const literalMap = {
 	"'": lit => lit.slice (1)
 }
 
-const functions = {
-	'+': (...nums) => nums.reduce ((acc, cur) => acc + cur, 0),
-	'*': (...nums) => nums.reduce ((acc, cur) => acc * cur, 1),
-	'-': (...nums) => 0 - nums.reduce ((acc, cur) => acc + cur, 0),
-	'/': (...nums) => 1 / nums.reduce ((acc, cur) => acc * cur, 1),
-	
+const builtins = {
+	'+': (param) => param.reduce ((acc, cur) => acc + cur, 0),
+	'*': (param) => param.reduce ((acc, cur) => acc * cur, 1),
+	'-': (param) => 0 - param.reduce ((acc, cur) => acc + cur, 0),
+	'/': (param) => 1 / param.reduce ((acc, cur) => acc * cur, 1),
+	at: ([list, pos]) => list [pos],
+	slice: ([list, start, end]) => list.slice (start, end),
+	cat: (param) => param.reduce ((acc, cur) => [...acc, ...cur], []),
+	map: ([list, func]) => list.map (func),
+	reduce: ([list, func, init]) => list.map (func, init),
+	cons: ([item, list]) => [item, ...list],
+	let: ([[name, value], body], scope) => evaluate (body, {__proto__: scope, [name]: value}),
+	set: ([name, value]) => permaScope [name] = value,
+	del: (param) => param.forEach (name => {delete permaScope [name]}),
+	lambda: ([names, ...body], scope) => (...values) => evaluate (body, {
+		...names.reduce ((subScope, name, idx) => subScope [name] = values [idx]),
+		__proto__: scope,
+	}),
+	list, eval: evaluate	
 }
+
+const permaScope = {__proto__: builtins}

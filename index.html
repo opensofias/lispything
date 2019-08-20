@@ -8,9 +8,10 @@
 	<script>
 		const run = () => {
 			document.getElementsByTagName ('output')[0].value =
-				list (tokens2tree ( str2tokens(
-					document.getElementsByTagName ('textarea')[0].value
-				)))
+					list (tokens2tree ( str2tokens(
+						document.getElementsByTagName ('textarea')[0].value
+					)), permaScope
+				)
 		}
 	</script>
 </head>
