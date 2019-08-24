@@ -68,6 +68,12 @@ const parseLiteral = str => {
 	return str
 }
 
+const pairs2object = (...pairs) =>
+	pairs.reduce ((object, [key, value]) =>
+		object [key] = value	
+	, {}
+)
+
 const literalMap = {
 	'#': lit => Number.parseInt(lit.slice (1), 16),
 	'd#': lit => Number.parseInt(lit.slice (2), 10),
@@ -87,13 +93,10 @@ const builtins = {
 	reduce: ([list, func, init]) => list.map (func, init),
 	cons: ([item, list]) => [item, ...list],
 	let: ([[name, value], body], scope) => evaluate (body, {__proto__: scope, [name]: value}),
-	set: ([name, value]) => permaScope [name] = value,
+	set: ([key, value]) => permaScope [key] = value,
 	del: (param) => param.forEach (name => {delete permaScope [name]}),
-	lambda: ([names, ...body], scope) => (values) => evaluate (body, {
-		...(names.reduce ((subScope, name, idx) =>
-			subScope [name] = values [idx], {}
-		)),	__proto__: scope,
-	}),
+	lambda: ([keys, ...body], scope) => (values) =>
+		evaluate (body, { ...(pairs2object ([keys, values].transposed)) , __proto__: scope}),
 	list, eval: evaluate	
 }
 
